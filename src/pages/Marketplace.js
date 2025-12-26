@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
 import { Search, Filter } from 'lucide-react';
 import { itemsRepository } from '../services/repositories';
 
@@ -192,11 +191,10 @@ const LoadingContainer = styled.div`
   color: #666;
 `;
 
-const CATEGORIES = ['Electronics', 'Clothes', 'Books', 'Tools', 'Furniture', 'Sports', 'Home & Kitchen', 'Other'];
-const CONDITIONS = ['New', 'Like New', 'Good', 'Fair', 'Poor'];
+const CATEGORIES = ['Electronics', 'Books', 'Project Kits', 'Hostel Essentials', 'Sports Gear/Equipment', 'Other'];
+const CONDITIONS = ['Like New', 'Good', 'Fair', 'Poor'];
 
-const Marketplace = () => {
-  const navigate = useNavigate();
+const Marketplace = ({ onSelectItem }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
@@ -209,14 +207,20 @@ const Marketplace = () => {
   });
 
   useEffect(() => {
-    loadItems();
-  }, []);
+    loadItems(filters);
+  }, [filters]);
 
-  const loadItems = async () => {
+  const loadItems = async (currentFilters = {}) => {
     try {
       setLoading(true);
-      const recentItems = await itemsRepository.getRecentItems(50);
-      setItems(recentItems);
+      const hasFilters = currentFilters && (currentFilters.category || currentFilters.condition || currentFilters.minPrice || currentFilters.maxPrice);
+      if (hasFilters) {
+        const res = await itemsRepository.getItems(currentFilters, null, 50);
+        setItems(res.items || []);
+      } else {
+        const recentItems = await itemsRepository.getRecentItems(50);
+        setItems(recentItems);
+      }
     } catch (err) {
       console.error('Error loading items:', err);
       setItems([]);
@@ -299,7 +303,7 @@ const Marketplace = () => {
       ) : (
         <ItemsGrid>
           {items.map(item => (
-            <ItemCard key={item.id} onClick={() => navigate(`/item/${item.id}`)}>
+            <ItemCard key={item.id} onClick={() => onSelectItem?.(item.id)}>
               <ItemImage src={item.images?.[0]?.url || 'https://via.placeholder.com/280x200'} alt={item.name} />
               <ItemInfo>
                 <ItemName>{item.name}</ItemName>

@@ -12,7 +12,6 @@ import {
   limit,
   startAfter,
   Timestamp,
-  writeBatch,
   arrayUnion,
 } from 'firebase/firestore';
 import { getFirestore } from 'firebase/firestore';

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
-import { Camera, Upload, X, Plus } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { Upload, X, Plus } from 'lucide-react';
+import { useAuth } from '../services/auth.service';
 import cloudinaryService from '../services/cloudinary.service';
 import { itemsRepository } from '../services/repositories';
 
@@ -318,7 +318,6 @@ const AddItem = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const fileInputRef = useRef(null);
-  const cameraInputRef = useRef(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

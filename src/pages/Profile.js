@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../services/auth.service';
 import { Loader2, AlertCircle, Upload, Edit2, Lock, LogOut } from 'lucide-react';
 import cloudinaryService from '../services/cloudinary.service';
 import profileService from '../services/profile.service';
@@ -406,15 +406,9 @@ const Profile = () => {
   const [stats, setStats] = useState({
     itemsListed: 0,
     itemsTraded: 0,
-    rating: 5.0,
-    reviews: 0
   });
 
-  useEffect(() => {
-    loadProfile();
-  }, [user, userData]);
-
-  const loadProfile = async () => {
+    const loadProfile = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -446,7 +440,11 @@ const Profile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, userData]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   const handleProfileImageUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -690,14 +688,6 @@ const Profile = () => {
               <StatCard>
                 <StatValue>{stats.itemsTraded}</StatValue>
                 <StatLabel>Traded</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{stats.rating.toFixed(1)}</StatValue>
-                <StatLabel>Rating</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{stats.reviews}</StatValue>
-                <StatLabel>Reviews</StatLabel>
               </StatCard>
             </StatsGrid>
           </ProfileInfo>

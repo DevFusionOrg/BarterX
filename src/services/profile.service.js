@@ -210,9 +210,12 @@ class ProfileService {
 
       const userData = userSnap.data();
 
-      // Get items count
-      const itemsRef = collection(this.db, `users/${userId}/items`);
-      const itemsSnap = await getDocs(itemsRef);
+      // Get items count from main items collection where ownerId matches
+      const itemsQuery = query(
+        collection(this.db, 'items'),
+        where('ownerId', '==', userId)
+      );
+      const itemsSnap = await getDocs(itemsQuery);
 
       // Get trades count (simplified - you may need to adjust based on your data structure)
       const tradesCollection = collection(this.db, `users/${userId}/trades`);
@@ -222,7 +225,6 @@ class ProfileService {
         itemsListed: itemsSnap.size || 0,
         itemsTraded: tradesSnap.size || 0,
         rating: userData.rating || 5.0,
-        reviews: userData.reviewCount || 0,
         joinDate: userData.createdAt || new Date(),
         accountStatus: userData.accountStatus || 'active',
       };
@@ -232,7 +234,6 @@ class ProfileService {
         itemsListed: 0,
         itemsTraded: 0,
         rating: 5.0,
-        reviews: 0,
       };
     }
   }
@@ -382,4 +383,6 @@ class ProfileService {
   }
 }
 
-export default new ProfileService();
+const profileService = new ProfileService();
+
+export default profileService;

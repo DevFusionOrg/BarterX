@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../services/auth.service';
 import styled from 'styled-components';
 
 const Container = styled.div`

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Clock, XCircle, MessageCircle } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../services/auth.service';
 import { requestsRepository, itemsRepository } from '../services/repositories';
 import profileService from '../services/profile.service';
 
@@ -233,15 +233,7 @@ const History = () => {
   const [itemsMap, setItemsMap] = useState({});
   const [usersMap, setUsersMap] = useState({});
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    loadRequests();
-  }, [activeTab, user]);
-
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
     try {
       setLoading(true);
       const role = activeTab === 'received' ? 'receiver' : 'sender';
@@ -282,7 +274,15 @@ const History = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, user]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    loadRequests();
+  }, [loadRequests, navigate, user]);
 
   const handleAccept = async (requestId) => {
     try {

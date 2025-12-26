@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
-import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Heart, Share2, Flag, Phone, MapPin, User } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../services/auth.service';
 import { itemsRepository, requestsRepository } from '../services/repositories';
 import profileService from '../services/profile.service';
 
@@ -12,6 +11,33 @@ const Container = styled.div`
   padding: 20px;
   padding-bottom: 30px;
   min-height: 100vh;
+`;
+
+const BackButtonStyled = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  background: white;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background: #f8f9ff;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
 `;
 
 const ContentGrid = styled.div`
@@ -286,9 +312,7 @@ const ErrorContainer = styled.div`
   margin-bottom: 20px;
 `;
 
-const ItemDetails = () => {
-  const { itemId } = useParams();
-  const navigate = useNavigate();
+const ItemDetails = ({ itemId, onBack }) => {
   const { user } = useAuth();
 
   const [item, setItem] = useState(null);
@@ -299,11 +323,7 @@ const ItemDetails = () => {
   const [sendingRequest, setSendingRequest] = useState(false);
   const [liked, setLiked] = useState(false);
 
-  useEffect(() => {
-    loadItem();
-  }, [itemId]);
-
-  const loadItem = async () => {
+  const loadItem = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -325,11 +345,16 @@ const ItemDetails = () => {
     } finally {
       setLoading(false);
     }
-  };
+
+  }, [itemId]);
+
+  useEffect(() => {
+    loadItem();
+  }, [loadItem]);
 
   const handleConnectClick = async () => {
     if (!user) {
-      navigate('/auth');
+      onBack?.();
       return;
     }
 
@@ -352,7 +377,7 @@ const ItemDetails = () => {
 
       if (result.success) {
         alert('Request sent successfully! The owner will review your request.');
-        navigate('/history');
+        onBack?.();
       }
     } catch (err) {
       console.error('Error sending request:', err);
@@ -394,6 +419,11 @@ const ItemDetails = () => {
 
   return (
     <Container>
+      <BackButtonStyled onClick={onBack}>
+        <ChevronLeft size={20} />
+        Back
+      </BackButtonStyled>
+
       {error && <ErrorContainer>{error}</ErrorContainer>}
 
       <ContentGrid>
@@ -496,7 +526,7 @@ const ItemDetails = () => {
                   Your Item
                 </SecondaryButton>
               ) : (
-                <ConnectButton onClick={() => navigate('/auth')}>
+                <ConnectButton onClick={onBack}>
                   Sign in to Connect
                 </ConnectButton>
               )}
